@@ -11,6 +11,12 @@ const contactAddSchema = Joi.object({
   phone: Joi.string().required(),
 });
 
+const changeSchema = Joi.object({
+  name: Joi.string(),
+  email: Joi.string(),
+  phone: Joi.string(),
+}).or("name", "email", "phone");
+
 contactsRouter.get('/', async (req, res, next) => {
   try {
     const result = await contactService.listContacts();
@@ -65,7 +71,7 @@ try {
 
 contactsRouter.put('/:contactId', async (req, res, next) => {
     try {
-      const { error } = contactAddSchema.validate(req.body);
+      const { error } = changeSchema.validate(req.body);
       if (error) {
         throw HttpError(400, error.message);
       }
