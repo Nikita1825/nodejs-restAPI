@@ -1,12 +1,13 @@
-
-import { nanoid } from "nanoid";
 import Contact from "../models/contact.js";
 import HttpError from "../helpers/httpError.js";
 
 
 
+
+
 const listContacts = async (req, res) => {
-  const result = await Contact.find();
+   const { _id: owner } = req.user;
+  const result = await Contact.find({ owner }.populate("owner", "email password"));
   
   res.json(result);
 };
@@ -32,8 +33,9 @@ const removeContact = async (req, res) => {
   });
 };
 
-const addContact = async (data) => {
-const result = await Contact.create(req.body);
+const addContact = async (req, res) => {
+  const {_id: owner}= req.user
+const result = await Contact.create({...req.body, owner});
 res.status(201).json(result);
 };
 const updateContact = async (req, res) => {
