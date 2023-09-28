@@ -1,20 +1,24 @@
-
-import { nanoid } from "nanoid";
 import Contact from "../models/contact.js";
 import HttpError from "../helpers/httpError.js";
 
 
 
+
+
 const listContacts = async (req, res) => {
-  const result = await Contact.find();
+   const { _id: owner } = req.user;
+  const result = await Contact.find({ owner }.populate("owner", "email password"));
   
   res.json(result);
 };
 
 const getContactById = async (req, res) => {
   const contactId = String(id);
+  const { _id: owner } = req.user;
   
-  const result = await Contact.findById(contactId);
+   const result = await Contact.findOne({
+     $and: [{ _id: contactId }, { owner }],
+   });
   if (!result) {
     throw HttpError(404, "Not found");
   }
@@ -23,24 +27,32 @@ const getContactById = async (req, res) => {
 
 const removeContact = async (req, res) => {
   const contactId = req.params.contactId;
-  const result = await Contact.findByIdAndDelete(contactId);
+   const { _id: owner } = req.user;
+ const result = await Contact.findOneAndDelete({
+   $and: [{ _id: contactId }, { owner }],
+ });
   if (!result) {
-    throw HttpErrors(404, `Not found`);
+    throw HttpError(404, `Not found`);
   }
   res.json({
     message: "Contact deleted",
   });
 };
 
-const addContact = async (data) => {
-const result = await Contact.create(req.body);
+const addContact = async (req, res) => {
+  const {_id: owner}= req.user
+const result = await Contact.create({...req.body, owner});
 res.status(201).json(result);
 };
 const updateContact = async (req, res) => {
+  const { _id: owner } = req.user;
   const contactId = req.params.contactId;
-  const result = await Contact.findByIdAndUpdate(contactId, req.body, {
-    new: true,
-  });
+ const result = await Contact.findOneAndUpdate(
+   { $and: [{ _id: contactId }, { owner }] },
+   req.body,
+   { new: true }
+ );
+  
   if (!result) {
     throw HttpError(404, `Not found`);
   }

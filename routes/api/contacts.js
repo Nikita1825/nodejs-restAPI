@@ -1,10 +1,10 @@
 import express from "express";
 import Joi from "joi";
-import {isValidid} from "../../middlewares/index.js"
-
 import contactService from "../../controllers/contacts.js";
+import {isValidid, authenticate} from "../../middlewares/index.js"
 import { HttpError } from "../../helpers/index.js";
 const contactsRouter = express.Router();
+                               
 const contactAddSchema = Joi.object({
   name: Joi.string().required(),
   id: Joi.string().required(),
@@ -20,17 +20,14 @@ const changeSchema = Joi.object({
   favorite: Joi.boolean(),
 }).or("name", "email", "phone", "favoriate");
 
+contactsRouter.use(authenticate)
+
 contactsRouter.get("/", contactService.listContacts);
-
 contactsRouter.get("/:contactId",isValidid, contactService.getContactById)
-
-
 contactsRouter.post("/", contactAddSchema, contactService.addContact);
-
 contactsRouter.delete("/:contactId", isValidid, contactService.removeContact)
-
-
 contactsRouter.put("/:contactId", isValidid, changeSchema, contactService.updateContact)
+
 
 contactsRouter.patch(
   "/:contactId/favorite",
@@ -38,7 +35,12 @@ contactsRouter.patch(
   changeSchema,
   contactService.updateContact
 );
+
+export default contactsRouter;
+
+
+
+
   
 
 
-export default contactsRouter;
