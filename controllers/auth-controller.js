@@ -2,8 +2,12 @@ import HttpError from "../helpers/httpError.js";
 import User from "../models/User.js";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import fs from "fs/promises"
+import path from "path"
+import gravatar from "gravatar";
 
-const {JWT_SECRET}= process.env
+const { JWT_SECRET } = process.env;
+const avatarsPath= path.resolve("public", "avatars")
 
 const signup = async (req, res)=>{
     const { email } = req.body;
@@ -11,8 +15,9 @@ const signup = async (req, res)=>{
     if (user) {
         throw HttpError(409, "Email already exist")
     }
-    const hashPassword = await bcrypt.hash(password, 10)
-    const newUser = await User.create({...req.body, password: hashPassword});
+  const hashPassword = await bcrypt.hash(password, 10)
+  const avatarURL = gravatar.url(email);
+    const newUser = await User.create({...req.body,avatarURL, password: hashPassword});
     res.status(201).json({
       email: newUser.email,
       password: newUser.password,
@@ -63,9 +68,23 @@ const signout = async (req, res) => {
   res.status(204);
 };
 
+const updateAvatar = async (req, res) => {
+  const { _id } = req.user;
+  const { path: oldPath, filename } = req.file;
+  const newPath = path.join(avatarsPath, filename);
+  await fs.rename(oldPath, newPath)
+  const avatarURL = path.join( "avatars", filename);
+  await User.findByIdAndUpdate(_id, { avatarURL });
+   res.json({
+     avatarURL,
+   });
+
+}
+
 export default {
   signup,
   signin,
   getCurrent,
   signout,
+  updateAvatar,
 };

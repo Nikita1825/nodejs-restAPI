@@ -1,7 +1,7 @@
 import express from "express";
 import Joi from "joi";
 import contactService from "../../controllers/contacts.js";
-import {isValidid, authenticate} from "../../middlewares/index.js"
+import {isValidid, authenticate, upload} from "../../middlewares/index.js"
 import { HttpError } from "../../helpers/index.js";
 const contactsRouter = express.Router();
                                
@@ -24,7 +24,7 @@ contactsRouter.use(authenticate)
 
 contactsRouter.get("/", contactService.listContacts);
 contactsRouter.get("/:contactId",isValidid, contactService.getContactById)
-contactsRouter.post("/", contactAddSchema, contactService.addContact);
+contactsRouter.post("/", contactAddSchema,  contactService.addContact);
 contactsRouter.delete("/:contactId", isValidid, contactService.removeContact)
 contactsRouter.put("/:contactId", isValidid, changeSchema, contactService.updateContact)
 
