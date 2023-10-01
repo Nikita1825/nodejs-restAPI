@@ -14,9 +14,15 @@ const userSignInSchema = Joi.object({
   password: Joi.string().min(6).required(),
   email: Joi.string().email().required(),
 });
+const userEmailSchema = Joi.object({
+  
+  email: Joi.string().email().required(),
+});
 
 authRouter.post("/signup", userSignUpSchema, isValidid, authController.signup);
 authRouter.post("/signin", userSignInSchema, isValidid);
+authRouter.get("/verify/:verificationCode", authController.verify);
+authRouter.post("/verify", userEmailSchema, authController.resendVerifyEmail);
 
 authRouter.get("/current", authenticate, authController.getCurrent)
 authRouter.post("/signout", authenticate, authController.signout);
